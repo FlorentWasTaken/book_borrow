@@ -8,7 +8,6 @@
         updateDoc,
         deleteDoc,
     } from "firebase/firestore";
-    import { sendPasswordResetEmail } from "firebase/auth";
     import { auth } from "../config/firebase";
     import { user } from "../stores/auth";
     import { navigate } from "svelte-routing";
@@ -161,28 +160,6 @@
         showEditModal = false;
         userToEdit = null;
     };
-
-    const resetUserPassword = async (u) => {
-        if (
-            !confirm(
-                `Envoyer un email de réinitialisation de mot de passe à ${u.email} ?`,
-            )
-        )
-            return;
-
-        try {
-            await sendPasswordResetEmail(auth, u.email);
-            addNotification(
-                `Email de réinitialisation envoyé à ${u.email}`,
-                "success",
-            );
-        } catch (e) {
-            addNotification(
-                "Erreur lors de l'envoi de l'email : " + e.message,
-                "error",
-            );
-        }
-    };
 </script>
 
 <div class="admin-panel">
@@ -271,13 +248,6 @@
                                         ✏️
                                     </button>
                                     <button
-                                        class="action-btn warning"
-                                        on:click={() => resetUserPassword(u)}
-                                        title="Réinitialiser le mot de passe"
-                                    >
-                                        🔑
-                                    </button>
-                                    <button
                                         class="action-btn delete"
                                         on:click={() => promptDelete(u)}
                                         title="Supprimer l'utilisateur"
@@ -304,36 +274,6 @@
         on:confirm={confirmDelete}
         on:close={cancelDelete}
     />
-
-    <Modal
-        isOpen={showEditModal}
-        title="Modifier l'utilisateur"
-        confirmText="Enregistrer"
-        cancelText="Annuler"
-        type="info"
-        on:confirm={saveEdit}
-        on:close={cancelEdit}
-    >
-        <div class="form-group">
-            <label for="edit-username">Nom d'utilisateur</label>
-            <input
-                type="text"
-                id="edit-username"
-                bind:value={editForm.username}
-                class="modal-input"
-            />
-        </div>
-        <div class="form-group">
-            <label for="edit-email">Email (Non modifiable)</label>
-            <input
-                type="email"
-                id="edit-email"
-                value={editForm.email}
-                disabled
-                class="modal-input disabled"
-            />
-        </div>
-    </Modal>
 
     <!-- Edit Modal -->
     <Modal

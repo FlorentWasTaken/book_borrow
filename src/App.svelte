@@ -36,6 +36,7 @@
       try {
         isDarkMode = JSON.parse(savedTheme);
       } catch (e) {
+        // Fallback if legacy "dark"/"light" string was stored
         isDarkMode = savedTheme === "dark";
       }
     } else {
@@ -252,10 +253,14 @@
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     width: 100%;
-    max-width: 900px; /* Wider to accommodate side-by-side profile */
+    max-width: 450px; /* Default small width for Auth */
     text-align: center;
     max-height: 90vh; /* Ensure card fits in viewport */
     overflow-y: auto; /* Scroll inside card if content is too long */
+  }
+
+  .card:has(:global(.profile-container)) {
+    max-width: 900px;
   }
 
   .card:has(:global(.admin-panel)) {

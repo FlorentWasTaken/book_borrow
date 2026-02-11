@@ -9,50 +9,57 @@ import {
     updateEmail,
     updatePassword
 } from 'firebase/auth';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 export const user = writable(null);
 export const isLoading = writable(true);
 
+let unsubscribeFirestore = null;
+
 onAuthStateChanged(auth, async (currentUser) => {
     if (currentUser) {
-        let userData = { role: 'user' }; // Default if fetch fails
-        try {
-            const userDocRef = doc(db, "users", currentUser.uid);
+        // If we already have a listener for a different user (shouldn't happen often), unsubscribe
+        if (unsubscribeFirestore) {
+            unsubscribeFirestore();
+            unsubscribeFirestore = null;
+        }
 
-            // Timeout promise to prevent infinite loading
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Firestore timeout")), 5000)
-            );
+        const userDocRef = doc(db, "users", currentUser.uid);
 
-            const userDoc = await Promise.race([
-                getDoc(userDocRef),
-                timeoutPromise
-            ]);
+        // Realtime listener
+        unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+            let userData = { role: 'user' };
 
-            if (userDoc.exists()) {
-                userData = { role: 'user', ...userDoc.data() };
+            if (docSnap.exists()) {
+                userData = { role: 'user', ...docSnap.data() };
             } else {
-                // Create user doc for existing users who login for the first time after this update
+                // Create user doc if it doesn't exist
                 userData = {
                     email: currentUser.email,
                     username: currentUser.displayName || 'User',
                     role: 'user',
                     createdAt: new Date().toISOString()
                 };
-                // Don't await this if it's blocked, let it fail silently or in background
                 setDoc(userDocRef, userData).catch(e => console.error("Error creating user doc:", e));
             }
-        } catch (e) {
-            console.error("Firestore Error or Timeout (User Data):", e);
-            // Fallback to default user role
-        }
 
-        user.set({ ...currentUser, ...userData });
+            user.set({ ...currentUser, ...userData });
+            isLoading.set(false);
+        }, (error) => {
+            console.error("Firestore Realtime Error:", error);
+            // Fallback to basic auth info if firestore fails
+            user.set({ ...currentUser, role: 'user' });
+            isLoading.set(false);
+        });
+
     } else {
+        if (unsubscribeFirestore) {
+            unsubscribeFirestore();
+            unsubscribeFirestore = null;
+        }
         user.set(null);
+        isLoading.set(false);
     }
-    isLoading.set(false);
 });
 
 export const register = async (email, password, username) => {
