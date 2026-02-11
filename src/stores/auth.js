@@ -9,7 +9,7 @@ import {
     updateEmail,
     updatePassword
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
 export const user = writable(null);
 export const isLoading = writable(true);
@@ -106,9 +106,15 @@ export const updateUser = async (data) => {
             await updateEmail(auth.currentUser, data.email);
         }
 
-        // Force update of the user store
-        const updatedUser = { ...auth.currentUser, ...data };
-        user.set(updatedUser);
+        const userDocRef = doc(db, "users", auth.currentUser.uid);
+        const firestoreData = {};
+        if (data.displayName) firestoreData.username = data.displayName;
+        if (data.email) firestoreData.email = data.email;
+
+        if (Object.keys(firestoreData).length > 0)
+            await updateDoc(userDocRef, /** @type {any} */(firestoreData));
+
+        user.update(currentUser => ({ ...currentUser, ...data }));
         return { success: true };
     } catch (error) {
         return { success: false, error: error.code };

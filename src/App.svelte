@@ -9,6 +9,7 @@
   import Sidebar from "./components/Sidebar.svelte";
   import Profile from "./components/Profile.svelte";
   import AdminPanel from "./components/AdminPanel.svelte";
+  import ToastContainer from "./components/ToastContainer.svelte";
 
   console.log("Firebase from Svelte:", app);
 
@@ -32,7 +33,11 @@
   onMount(() => {
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
-      isDarkMode = savedTheme === "dark";
+      try {
+        isDarkMode = JSON.parse(savedTheme);
+      } catch (e) {
+        isDarkMode = savedTheme === "dark";
+      }
     } else {
       isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
@@ -57,15 +62,17 @@
 
   const toggleTheme = () => {
     isDarkMode = !isDarkMode;
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    localStorage.setItem("theme", JSON.stringify(isDarkMode));
     updateTheme();
   };
 
   const updateTheme = () => {
     if (isDarkMode) {
       document.documentElement.setAttribute("data-theme", "dark");
+      document.body.classList.add("dark-mode");
     } else {
       document.documentElement.removeAttribute("data-theme");
+      document.body.classList.remove("dark-mode");
     }
   };
 </script>
@@ -88,6 +95,7 @@
       {/if}
 
       <main class:with-sidebar={$user}>
+        <ToastContainer />
         {#if connectionError}
           <div class="connection-banner">
             <p>
@@ -238,10 +246,6 @@
     background-color: rgba(0, 0, 0, 0.05);
   }
 
-  main.with-sidebar {
-    /* This rule was incomplete in the instruction, keeping existing properties */
-  }
-
   .card {
     background: var(--card-bg);
     padding: 2.5rem;
@@ -252,6 +256,12 @@
     text-align: center;
     max-height: 90vh; /* Ensure card fits in viewport */
     overflow-y: auto; /* Scroll inside card if content is too long */
+  }
+
+  .card:has(:global(.admin-panel)) {
+    max-width: 95vw;
+    height: 95vh;
+    max-height: 95vh;
   }
 
   header {
