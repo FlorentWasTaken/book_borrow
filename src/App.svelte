@@ -65,6 +65,7 @@
     <main>
       <div class="card">
         <header>
+          <img src="/src/assets/logo.svg" alt="Book Borrow Logo" class="logo" />
           <h1>Book Borrow</h1>
           <p class="subtitle">Emprunt de livres simplifié</p>
         </header>
@@ -157,6 +158,12 @@
 
   header {
     margin-bottom: 2rem;
+  }
+
+  .logo {
+    width: 80px;
+    height: auto;
+    margin-bottom: 1rem;
   }
 
   h1 {

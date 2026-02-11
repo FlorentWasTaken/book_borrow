@@ -5,8 +5,7 @@
         "moduleResolution": "Node",
         "resolveJsonModule": true,
         "allowJs": true,
-        "checkJs": true,
-        "isolation": false
+        "checkJs": true
     },
     "include": [
         "src/**/*"

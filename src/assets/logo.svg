@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="#ff3e00" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Book -->
+  <path d="M20 35 C20 35 40 50 50 50 C60 50 80 35 80 35" />
+  <path d="M20 35 V65" />
+  <path d="M80 35 V65" />
+  <path d="M20 65 C20 65 40 80 50 80 C60 80 80 65 80 65" />
+  <path d="M50 50 V80" />
+  
+  <!-- Hands / Support -->
+  <path d="M30 85 Q40 95 50 95 Q60 95 70 85" stroke-width="4" />
+</svg>
