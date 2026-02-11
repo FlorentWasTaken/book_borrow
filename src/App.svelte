@@ -6,11 +6,28 @@
   import Login from "./components/Login.svelte";
   import Register from "./components/Register.svelte";
   import Loader from "./components/Loader.svelte";
+  import Sidebar from "./components/Sidebar.svelte";
+  import Profile from "./components/Profile.svelte";
+  import AdminPanel from "./components/AdminPanel.svelte";
 
   console.log("Firebase from Svelte:", app);
 
   let isDarkMode = false;
-  export let url = ""; // for SSR purposes if needed, good practice with svelte-routing
+  let isSidebarOpen = false;
+  let connectionError = false;
+  export let url = "";
+
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    if (
+      args[0] &&
+      typeof args[0] === "string" &&
+      args[0].includes("Firestore Error or Timeout")
+    ) {
+      connectionError = true;
+    }
+    originalConsoleError.apply(console, args);
+  };
 
   onMount(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -22,7 +39,6 @@
     updateTheme();
   });
 
-  // Reactive statement to handle redirects based on auth state
   $: if (!$isLoading) {
     if (
       $user &&
@@ -30,7 +46,11 @@
         window.location.pathname === "/register")
     ) {
       navigate("/", { replace: true });
-    } else if (!$user && window.location.pathname === "/") {
+    } else if (
+      !$user &&
+      (window.location.pathname === "/" ||
+        window.location.pathname === "/profile")
+    ) {
       navigate("/login", { replace: true });
     }
   }
@@ -62,55 +82,82 @@
   <Loader message="Vérification de l'authentification..." />
 {:else}
   <Router {url}>
-    <main>
-      <div class="card">
-        <header>
-          <img src="/src/assets/logo.svg" alt="Book Borrow Logo" class="logo" />
-          <h1>Book Borrow</h1>
-          <p class="subtitle">Emprunt de livres simplifié</p>
-        </header>
+    <div class="app-layout">
+      {#if $user}
+        <Sidebar bind:isOpen={isSidebarOpen} />
+      {/if}
 
-        <div class="content">
-          <Route path="/">
-            {#if $user}
-              <div class="user-panel">
-                <p>
-                  Bienvenue, <strong>{$user.displayName || $user.email}</strong>
-                  !
-                </p>
-                <button class="primary-btn" on:click={logout}
-                  >Se déconnecter</button
+      <main class:with-sidebar={$user}>
+        {#if connectionError}
+          <div class="connection-banner">
+            <p>
+              ⚠️ <strong>Connexion Base de données bloquée</strong> : Une extension
+              (AdBlock, uBlock...) empêche le chargement complet.
+            </p>
+            <button on:click={() => (connectionError = false)}>OK</button>
+          </div>
+        {/if}
+        <div class="card">
+          <header>
+            <img
+              src="/src/assets/logo.svg"
+              alt="Book Borrow Logo"
+              class="logo"
+            />
+            <h1>Book Borrow</h1>
+            <p class="subtitle">Emprunt de livres simplifié</p>
+          </header>
+
+          <div class="content">
+            <Route path="/">
+              {#if $user}
+                <div class="user-panel">
+                  <p>
+                    Bienvenue, <strong
+                      >{$user.displayName || $user.email}</strong
+                    >
+                    !
+                  </p>
+                  <!-- Logout button moved to Sidebar -->
+                </div>
+              {:else}
+                <p>Redirection...</p>
+              {/if}
+            </Route>
+
+            <Route path="/profile">
+              <Profile />
+            </Route>
+
+            <Route path="/admin">
+              <AdminPanel />
+            </Route>
+
+            <Route path="/login">
+              <Login />
+              <p class="switch-mode">
+                Pas encore de compte ? <a
+                  href="/register"
+                  use:link
+                  class="link-button">S'inscrire</a
                 >
-              </div>
-            {:else}
-              <p>Redirection...</p>
-            {/if}
-          </Route>
+              </p>
+            </Route>
 
-          <Route path="/login">
-            <Login />
-            <p class="switch-mode">
-              Pas encore de compte ? <a
-                href="/register"
-                use:link
-                class="link-button">S'inscrire</a
-              >
-            </p>
-          </Route>
-
-          <Route path="/register">
-            <Register />
-            <p class="switch-mode">
-              Vous avez déjà un compte ? <a
-                href="/login"
-                use:link
-                class="link-button">Se connecter</a
-              >
-            </p>
-          </Route>
+            <Route path="/register">
+              <Register />
+              <p class="switch-mode">
+                Vous avez déjà un compte ? <a
+                  href="/login"
+                  use:link
+                  class="link-button">Se connecter</a
+                >
+              </p>
+            </Route>
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </Router>
 {/if}
 
@@ -137,13 +184,62 @@
   .theme-toggle:hover {
     transform: scale(1.1);
   }
+  .app-layout {
+    display: flex;
+    min-height: 100vh;
+  }
 
   main {
+    flex-grow: 1;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; /* Center vertically */
+    padding: 2rem;
     width: 100%;
+    position: relative;
+    flex-direction: column; /* Allow banner to stack */
+    align-items: center; /* Center banner */
+    height: 100vh; /* Force full height */
+    overflow: hidden; /* Prevent scroll on main body if not needed */
+  }
+
+  .connection-banner {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
     padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .connection-banner p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .connection-banner button {
+    background: none;
+    border: 1px solid #856404;
+    color: #856404;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    margin-left: 1rem;
+  }
+
+  .connection-banner button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  main.with-sidebar {
+    /* This rule was incomplete in the instruction, keeping existing properties */
   }
 
   .card {
@@ -152,8 +248,10 @@
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
     width: 100%;
-    max-width: 400px;
+    max-width: 900px; /* Wider to accommodate side-by-side profile */
     text-align: center;
+    max-height: 90vh; /* Ensure card fits in viewport */
+    overflow-y: auto; /* Scroll inside card if content is too long */
   }
 
   header {
@@ -186,20 +284,6 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-  }
-
-  .primary-btn {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--border-radius);
-    font-size: 1rem;
-    font-weight: 600;
-  }
-
-  .primary-btn:hover {
-    background-color: var(--primary-hover);
   }
 
   .switch-mode {
