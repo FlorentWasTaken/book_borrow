@@ -325,17 +325,6 @@
         color: white;
     }
 
-    .action-btn.warning {
-        border-color: #ff9800;
-        color: #ff9800;
-        margin-left: 0.5rem;
-    }
-
-    .action-btn.warning:hover {
-        background-color: #ff9800;
-        color: white;
-    }
-
     h2 {
         color: var(--primary);
         margin-bottom: 2rem;
