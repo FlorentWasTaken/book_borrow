@@ -9,6 +9,7 @@
   import Sidebar from "./components/Sidebar.svelte";
   import Profile from "./components/Profile.svelte";
   import AdminPanel from "./components/AdminPanel.svelte";
+  import Library from "./components/Library.svelte";
   import ToastContainer from "./components/ToastContainer.svelte";
 
   console.log("Firebase from Svelte:", app);
@@ -127,7 +128,6 @@
                     >
                     !
                   </p>
-                  <!-- Logout button moved to Sidebar -->
                 </div>
               {:else}
                 <p>Redirection...</p>
@@ -140,6 +140,10 @@
 
             <Route path="/admin">
               <AdminPanel />
+            </Route>
+
+            <Route path="/library">
+              <Library />
             </Route>
 
             <Route path="/login">
@@ -263,7 +267,8 @@
     max-width: 900px;
   }
 
-  .card:has(:global(.admin-panel)) {
+  .card:has(:global(.admin-panel)),
+  .card:has(:global(.library-container)) {
     max-width: 95vw;
     height: 95vh;
     max-height: 95vh;
