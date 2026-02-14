@@ -97,6 +97,31 @@
       {/if}
 
       <main class:with-sidebar={$user}>
+        {#if $user}
+          <button
+            class="hamburger-btn"
+            on:click={() => (isSidebarOpen = !isSidebarOpen)}
+            aria-label="Toggle Menu"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><line x1="3" y1="12" x2="21" y2="12"></line><line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"
+              ></line><line x1="3" y1="18" x2="21" y2="18"></line></svg
+            >
+          </button>
+        {/if}
         <ToastContainer />
         {#if connectionError}
           <div class="connection-banner">
@@ -326,5 +351,25 @@
   .link-button:hover {
     text-decoration: underline;
     color: var(--primary-hover);
+  }
+
+  .hamburger-btn {
+    display: none;
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    z-index: 90;
+  }
+
+  @media (max-width: 767px) {
+    .hamburger-btn {
+      display: block;
+    }
   }
 </style>

@@ -10,6 +10,14 @@
     };
 </script>
 
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div
+    class="backdrop"
+    class:visible={isOpen}
+    on:click={() => (isOpen = false)}
+></div>
+
 <aside class:open={isOpen} class:collapsed={isCollapsed}>
     <div class="toggle-btn-container">
         <button
@@ -202,8 +210,24 @@
 </aside>
 
 <style>
+    /* Backdrop for mobile */
+    .backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        display: none; /* Hidden by default */
+    }
+
+    .backdrop.visible {
+        display: block; /* Show only when sidebar is open on mobile */
+    }
+
     aside {
-        width: 200px;
+        width: 250px; /* Wider for mobile readability */
         background-color: var(--card-bg);
         height: 100vh;
         position: fixed;
@@ -232,10 +256,16 @@
     /* Desktop view */
     @media (min-width: 768px) {
         aside {
-            transform: translateX(0);
+            width: 200px; /* Standard desktop width */
+            transform: translateX(0); /* Always visible on desktop */
             position: sticky;
             top: 0;
             height: 100vh;
+        }
+
+        .backdrop,
+        .backdrop.visible {
+            display: none; /* Never show backdrop on desktop */
         }
     }
 
@@ -243,6 +273,16 @@
         display: flex;
         justify-content: flex-end;
         margin-bottom: 2rem;
+    }
+
+    /* Hide collapse button on mobile */
+    @media (max-width: 767px) {
+        .toggle-btn-container {
+            display: none;
+        }
+        aside.collapsed {
+            width: 250px; /* Don't collapse on mobile */
+        }
     }
 
     .toggle-btn {
@@ -307,6 +347,29 @@
         padding: 0.75rem 0;
     }
 
+    /* Ensure text is hidden when collapsed only on desktop */
+    @media (min-width: 768px) {
+        aside.collapsed .label {
+            opacity: 0;
+            width: 0;
+            display: none;
+        }
+        aside.collapsed .icon {
+            margin-right: 0;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .label.hidden {
+            display: block;
+            width: auto;
+            opacity: 1;
+        }
+        .icon {
+            margin-right: 1rem;
+        }
+    }
+
     a:hover,
     button:hover {
         background-color: rgba(0, 0, 0, 0.05);
@@ -328,20 +391,12 @@
         transition: margin 0.3s;
     }
 
-    aside.collapsed .icon {
-        margin-right: 0;
-    }
-
     .label {
         opacity: 1;
         transition: opacity 0.2s ease-in-out;
     }
 
-    .label.hidden {
-        opacity: 0;
-        width: 0;
-        display: none;
-    }
+    /* Deprecated .label.hidden selector here in favor of media query control above */
 
     .logout-btn {
         color: #d32f2f;
