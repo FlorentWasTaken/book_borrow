@@ -10,6 +10,71 @@
 
     const dispatch = createEventDispatcher();
 
+    let searchResults = [];
+    let showSuggestions = false;
+    let searchTimeout;
+
+    async function searchBooks(query) {
+        if (!query || query.length < 3) {
+            searchResults = [];
+            showSuggestions = false;
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=5`,
+            );
+            const data = await response.json();
+
+            if (data.items) {
+                searchResults = data.items.map((item) => ({
+                    id: item.id,
+                    title: item.volumeInfo.title,
+                    authors: item.volumeInfo.authors || [],
+                    coverUrl:
+                        item.volumeInfo.imageLinks?.thumbnail ||
+                        item.volumeInfo.imageLinks?.smallThumbnail ||
+                        null,
+                }));
+                showSuggestions = true;
+            } else {
+                searchResults = [];
+                showSuggestions = false;
+            }
+        } catch (e) {
+            console.error("Error searching books:", e);
+            searchResults = [];
+            showSuggestions = false;
+        }
+    }
+
+    function handleTitleInput(e) {
+        title = e.target.value;
+        coverFile = null;
+
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            searchBooks(title);
+        }, 500);
+    }
+
+    function selectBook(book) {
+        title = book.title;
+        if (book.coverUrl) {
+            let secureUrl = book.coverUrl.replace("http:", "https:");
+            previewUrl = secureUrl;
+        } else {
+            previewUrl = "";
+        }
+
+        showSuggestions = false;
+    }
+
+    function handleClickOutside() {
+        showSuggestions = false;
+    }
+
     function handleFileChange(event) {
         const file = event.target.files[0];
         if (file) {
@@ -24,13 +89,21 @@
     async function handleSubmit() {
         if (title.trim()) {
             isSubmitting = true;
-            dispatch("add", { title, coverFile });
+            let payload = { title };
+            if (coverFile) {
+                payload.coverFile = coverFile;
+            } else if (previewUrl && previewUrl.startsWith("http")) {
+                payload.coverUrl = previewUrl;
+            }
+
+            dispatch("add", payload);
             setTimeout(() => {
                 title = "";
                 coverFile = null;
                 previewUrl = "";
                 isSubmitting = false;
                 isOpen = false;
+                searchResults = [];
             }, 1000);
         }
     }
@@ -40,6 +113,7 @@
         title = "";
         coverFile = null;
         previewUrl = "";
+        searchResults = [];
     }
 </script>
 
@@ -53,22 +127,64 @@
     >
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-        <div class="modal-content" on:click|stopPropagation role="document">
+        <div
+            class="modal-content"
+            on:click|stopPropagation
+            role="document"
+            on:click={handleClickOutside}
+        >
             <h2>Ajouter un livre</h2>
             <form on:submit|preventDefault={handleSubmit}>
-                <div class="form-group">
+                <div class="form-group relative">
                     <label for="title">Titre du livre</label>
                     <input
                         type="text"
                         id="title"
-                        bind:value={title}
+                        value={title}
+                        on:input={handleTitleInput}
                         required
                         disabled={isSubmitting}
-                        placeholder="Titre du livre"
+                        placeholder="Recherchez un titre..."
+                        autocomplete="off"
                     />
+
+                    {#if showSuggestions && searchResults.length > 0}
+                        <ul class="suggestions">
+                            {#each searchResults as book}
+                                <li>
+                                    <button
+                                        type="button"
+                                        on:click|stopPropagation={() =>
+                                            selectBook(book)}
+                                    >
+                                        {#if book.coverUrl}
+                                            <img
+                                                src={book.coverUrl}
+                                                alt=""
+                                                class="thumb"
+                                            />
+                                        {:else}
+                                            <div class="thumb-placeholder">
+                                                ?
+                                            </div>
+                                        {/if}
+                                        <div class="info">
+                                            <span class="book-title"
+                                                >{book.title}</span
+                                            >
+                                            <span class="book-author"
+                                                >{book.authors.join(", ")}</span
+                                            >
+                                        </div>
+                                    </button>
+                                </li>
+                            {/each}
+                        </ul>
+                    {/if}
                 </div>
+
                 <div class="form-group">
-                    <label for="cover">Photo de couverture</label>
+                    <label for="cover">Photo de couverture (Optionnel)</label>
                     <input
                         type="file"
                         id="cover"
@@ -76,6 +192,10 @@
                         on:change={handleFileChange}
                         disabled={isSubmitting}
                     />
+                    <small
+                        >Laissez vide pour utiliser l'image trouvée ou par
+                        défaut.</small
+                    >
                 </div>
 
                 {#if previewUrl}
@@ -190,5 +310,81 @@
 
     button:hover:not(:disabled) {
         opacity: 0.9;
+    }
+
+    .form-group.relative {
+        position: relative;
+    }
+
+    .suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--card-bg, #fff);
+        border: 1px solid #ccc;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 10;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .suggestions li button {
+        width: 100%;
+        text-align: left;
+        padding: 0.5rem;
+        background: none;
+        border-bottom: 1px solid #eee;
+        border-radius: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-color, #333);
+    }
+
+    .suggestions li button:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .suggestions .thumb {
+        width: 40px;
+        height: 60px;
+        object-fit: cover;
+    }
+
+    .suggestions .thumb-placeholder {
+        width: 40px;
+        height: 60px;
+        background: #eee;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+    }
+
+    .suggestions .info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .suggestions .book-title {
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .suggestions .book-author {
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    small {
+        display: block;
+        margin-top: 5px;
+        color: #666;
+        font-size: 0.8rem;
     }
 </style>

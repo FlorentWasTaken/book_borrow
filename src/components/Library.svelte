@@ -47,8 +47,8 @@
     }
 
     async function handleAddBook(event) {
-        const { title, coverFile } = event.detail;
-        const result = await addBook({ title, coverFile });
+        const { title, coverFile, coverUrl } = event.detail;
+        const result = await addBook({ title, coverFile, coverUrl });
         if (!result.success) {
             error = "Erreur lors de l'ajout du livre : " + result.error;
         }

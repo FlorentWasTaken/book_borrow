@@ -8,7 +8,7 @@
     $: isOwner = $user && book.ownerId === $user.uid;
 
     const dispatch = createEventDispatcher();
-    const defaultCover = "dummyimage.com/300x200/";
+    const defaultCover = "/src/assets/book_placeholder.svg";
 
     function handleAction(action) {
         dispatch(action, { book });
