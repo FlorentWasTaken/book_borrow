@@ -48,7 +48,7 @@
         </div>
     </div>
     <div class="info">
-        <h3>{book.title}</h3>
+        <h3 title={book.title}>{book.title}</h3>
         {#if book.status === "lent"}
             {#if isOwner}
                 <span class="status lent"
@@ -146,9 +146,16 @@
         margin: 0;
         font-size: 1rem;
         color: var(--text-color, #fff);
-        white-space: nowrap;
+
+        /* Multi-line clamp instead of single line */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        line-height: 1.2;
+        max-height: 2.4em; /* Height for exactly 2 lines */
     }
 
     .status {
