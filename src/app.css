@@ -1,7 +1,10 @@
 :root {
   --primary: #ff3e00;
   --primary-hover: #e63900;
+  --primary-light: rgba(255, 62, 0, 0.1);
   --bg-color: #f4f6f8;
+  --bg-secondary: #f9f9f9;
+  --bg-hover: #f0f0f0;
   --card-bg: #ffffff;
   --text-color: #333333;
   --text-muted: #666666;
@@ -19,7 +22,10 @@
 [data-theme="dark"] {
   --primary: #ff5722;
   --primary-hover: #ff7043;
+  --primary-light: rgba(255, 87, 34, 0.2);
   --bg-color: #1a1a1a;
+  --bg-secondary: #333333;
+  --bg-hover: #404040;
   --card-bg: #2d2d2d;
   --text-color: #e0e0e0;
   --text-muted: #a0a0a0;

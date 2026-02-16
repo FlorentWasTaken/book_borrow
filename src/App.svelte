@@ -10,6 +10,7 @@
   import Profile from "./components/Profile.svelte";
   import AdminPanel from "./components/AdminPanel.svelte";
   import Library from "./components/Library.svelte";
+  import UserGuide from "./components/UserGuide.svelte";
   import ToastContainer from "./components/ToastContainer.svelte";
 
   console.log("Firebase from Svelte:", app);
@@ -153,6 +154,7 @@
                     >
                     !
                   </p>
+                  <UserGuide />
                 </div>
               {:else}
                 <p>Redirection...</p>
