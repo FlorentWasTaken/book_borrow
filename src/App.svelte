@@ -370,5 +370,18 @@
     .hamburger-btn {
       display: block;
     }
+
+    main {
+      padding: 1rem;
+    }
+
+    .card {
+      padding: 1.5rem;
+      max-height: 85vh;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+    }
   }
 </style>

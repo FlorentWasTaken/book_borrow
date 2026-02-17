@@ -13,9 +13,17 @@
     function handleAction(action) {
         dispatch(action, { book });
     }
+
+    function handleCardClick() {
+        if (window.innerWidth <= 768) {
+            dispatch("open_sheet", { book });
+        }
+    }
 </script>
 
-<div class="book-card">
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<div class="book-card" on:click={handleCardClick}>
     <div class="cover-container">
         <img src={book.coverUrl || defaultCover} alt={book.title} />
         <div class="overlay">
@@ -63,7 +71,7 @@
 
 <style>
     .book-card {
-        width: 200px;
+        width: 100%;
         background: var(--card-bg, #1e1e1e);
         border-radius: 8px;
         overflow: hidden;
@@ -174,5 +182,26 @@
         padding: 4px 8px;
         background: #28a745;
         width: 100%;
+    }
+    @media (max-width: 767px), (hover: none) {
+        .cover-container {
+            height: auto;
+            aspect-ratio: 2/3;
+        }
+
+        .overlay {
+            display: none !important;
+            pointer-events: none;
+        }
+
+        h3 {
+            font-size: 0.8rem;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+        }
+
+        .status {
+            font-size: 0.7rem;
+        }
     }
 </style>
