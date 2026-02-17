@@ -46,6 +46,27 @@ A web application for managing book borrowing, built with **Svelte** and **Fireb
 - `src/config`: Firebase configuration.
 - `src/assets`: Images and logos.
 
+## 🚀 Deployment
+
+The project is configured for **Firebase Hosting**.
+
+1.  **Install Firebase CLI**
+    ```bash
+    npm install -g firebase-tools
+    ```
+
+2.  **Login & Select Project**
+    ```bash
+    firebase login
+    firebase use --add
+    ```
+
+3.  **Build & Deploy**
+    ```bash
+    npm run build
+    firebase deploy
+    ```
+
 ---
 
 Developed with ❤️

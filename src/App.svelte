@@ -12,6 +12,7 @@
   import Library from "./components/Library.svelte";
   import UserGuide from "./components/UserGuide.svelte";
   import ToastContainer from "./components/ToastContainer.svelte";
+  import logo from "./assets/logo.svg";
 
   console.log("Firebase from Svelte:", app);
 
@@ -135,11 +136,7 @@
         {/if}
         <div class="card">
           <header>
-            <img
-              src="/src/assets/logo.svg"
-              alt="Book Borrow Logo"
-              class="logo"
-            />
+            <img src={logo} alt="Book Borrow Logo" class="logo" />
             <h1>Book Borrow</h1>
             <p class="subtitle">Emprunt de livres simplifié</p>
           </header>
