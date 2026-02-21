@@ -7,12 +7,17 @@
 
     let displayName = $user?.displayName || "";
     let email = $user?.email || "";
+    let inventoryVisibility = $user?.inventoryVisibility || "friends";
 
     let newPassword = "";
     let confirmNewPassword = "";
 
     const handleInfoUpdate = async () => {
-        const result = await updateUser({ displayName, email });
+        const result = await updateUser({
+            displayName,
+            email,
+            inventoryVisibility,
+        });
 
         if (result.success) {
             addNotification(
@@ -85,6 +90,14 @@
                         bind:value={email}
                         required
                     />
+                </div>
+                <div class="form-group">
+                    <label for="visibility">Visibilité de mon inventaire</label>
+                    <select id="visibility" bind:value={inventoryVisibility}>
+                        <option value="public">Public (Tout le monde)</option>
+                        <option value="friends">Amis uniquement</option>
+                        <option value="private">Privé (Personne)</option>
+                    </select>
                 </div>
                 <button type="submit" class="submit-btn primary"
                     >Enregistrer</button
@@ -206,7 +219,8 @@
         color: var(--text-color);
     }
 
-    input {
+    input,
+    select {
         width: 100%;
         padding: 0.5rem;
         border: 1px solid #ddd;
@@ -216,7 +230,8 @@
         color: var(--text-color);
     }
 
-    input:focus {
+    input:focus,
+    select:focus {
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 2px rgba(255, 62, 0, 0.1);

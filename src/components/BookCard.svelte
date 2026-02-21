@@ -4,6 +4,7 @@
     import { user } from "../stores/auth";
 
     export let book;
+    export let readOnly = false;
 
     $: isOwner = $user && book.ownerId === $user.uid;
 
@@ -11,10 +12,12 @@
     const defaultCover = "/src/assets/book_placeholder.svg";
 
     function handleAction(action) {
+        if (readOnly) return;
         dispatch(action, { book });
     }
 
     function handleCardClick() {
+        if (readOnly) return;
         if (window.innerWidth <= 768) {
             dispatch("open_sheet", { book });
         }
@@ -23,37 +26,41 @@
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div class="book-card" on:click={handleCardClick}>
+<div class="book-card" on:click={handleCardClick} class:readonly={readOnly}>
     <div class="cover-container">
         <img src={book.coverUrl || defaultCover} alt={book.title} />
-        <div class="overlay">
-            {#if isOwner}
-                {#if book.status !== "lent"}
-                    <button on:click={() => handleAction("lend")}>Prêter</button
-                    >
-                    <button on:click={() => handleAction("give")}>Donner</button
-                    >
-                    <button
-                        class="danger"
-                        on:click={() => handleAction("delete")}
-                        >Supprimer</button
-                    >
+        {#if !readOnly}
+            <div class="overlay">
+                {#if isOwner}
+                    {#if book.status !== "lent"}
+                        <button on:click={() => handleAction("lend")}
+                            >Prêter</button
+                        >
+                        <button on:click={() => handleAction("give")}
+                            >Donner</button
+                        >
+                        <button
+                            class="danger"
+                            on:click={() => handleAction("delete")}
+                            >Supprimer</button
+                        >
+                    {:else}
+                        <button
+                            class="return-btn"
+                            on:click={() => handleAction("return")}
+                            >Marquer comme rendu</button
+                        >
+                    {/if}
                 {:else}
+                    <!-- Borrower View -->
                     <button
                         class="return-btn"
                         on:click={() => handleAction("return")}
-                        >Marquer comme rendu</button
+                        >Rendre le livre</button
                     >
                 {/if}
-            {:else}
-                <!-- Borrower View -->
-                <button
-                    class="return-btn"
-                    on:click={() => handleAction("return")}
-                    >Rendre le livre</button
-                >
-            {/if}
-        </div>
+            </div>
+        {/if}
     </div>
     <div class="info">
         <h3 title={book.title}>{book.title}</h3>

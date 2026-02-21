@@ -74,6 +74,7 @@ export const register = async (email, password, username) => {
             email: email,
             username: username,
             role: 'user', // Default role
+            inventoryVisibility: 'friends', // Default visibility
             createdAt: new Date().toISOString()
         });
 
@@ -117,6 +118,7 @@ export const updateUser = async (data) => {
         const firestoreData = {};
         if (data.displayName) firestoreData.username = data.displayName;
         if (data.email) firestoreData.email = data.email;
+        if (data.inventoryVisibility) firestoreData.inventoryVisibility = data.inventoryVisibility;
 
         if (Object.keys(firestoreData).length > 0)
             await updateDoc(userDocRef, /** @type {any} */(firestoreData));

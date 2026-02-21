@@ -1,27 +1,29 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
-    import { getAllUsers } from "../stores/books";
     import { user } from "../stores/auth";
+    import {
+        friends,
+        listenToFriends,
+        isLoadingFriends,
+    } from "../stores/friends";
 
     export let isOpen = false;
-    export let title = "Sélectionner un utilisateur";
+    export let title = "Sélectionner un ami";
 
     let selectedUserId = "";
-    let users = [];
-    let loading = false;
     const dispatch = createEventDispatcher();
 
-    onMount(async () => {
-        loading = true;
-        users = await getAllUsers();
-        loading = false;
-    });
+    $: if ($user && isOpen) {
+        listenToFriends($user.uid);
+    }
 
-    $: filteredUsers = users.filter((u) => u.id !== $user?.uid);
+    $: filteredUsers = $friends.filter((u) => u.id !== $user?.uid);
 
     function handleSubmit() {
         if (selectedUserId) {
-            const selectedUser = users.find((u) => u.id === selectedUserId);
+            const selectedUser = filteredUsers.find(
+                (u) => u.id === selectedUserId,
+            );
             if (selectedUser) {
                 dispatch("select", { user: selectedUser });
                 selectedUserId = "";
@@ -54,14 +56,16 @@
                         id="user-select"
                         bind:value={selectedUserId}
                         required
-                        disabled={loading}
+                        disabled={$isLoadingFriends}
                     >
                         <option value="" disabled selected
-                            >-- Choisir un utilisateur --</option
+                            >-- Choisir un ami --</option
                         >
-                        {#if loading}
+                        {#if $isLoadingFriends}
+                            <option disabled>Chargement de vos amis...</option>
+                        {:else if filteredUsers.length === 0}
                             <option disabled
-                                >Chargement des utilisateurs...</option
+                                >Vous n'avez pas encore d'amis.</option
                             >
                         {:else}
                             {#each filteredUsers as u}

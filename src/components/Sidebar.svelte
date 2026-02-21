@@ -1,6 +1,7 @@
 <script>
-    import { link } from "svelte-routing";
+    import { link, navigate } from "svelte-routing";
     import { logout, user } from "../stores/auth";
+    import { friendRequests, listenToFriendRequests } from "../stores/friends";
 
     export let isOpen = false;
     let isCollapsed = false;
@@ -8,6 +9,17 @@
     const toggleCollapse = () => {
         isCollapsed = !isCollapsed;
     };
+
+    const handleLogout = async () => {
+        await logout();
+        navigate("/login", { replace: true });
+        isOpen = false;
+    };
+
+    $: if ($user) {
+        listenToFriendRequests($user.uid);
+    }
+    $: pendingCount = $friendRequests.length;
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -145,6 +157,39 @@
                     >
                 </a>
             </li>
+            <li>
+                <a
+                    href="/friends"
+                    use:link
+                    on:click={() => (isOpen = false)}
+                    title="Amis"
+                >
+                    <span class="icon" style="position: relative;">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="feather feather-users"
+                            ><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                            ></path><circle cx="9" cy="7" r="4"></circle><path
+                                d="M23 21v-2a4 4 0 0 0-3-3.87"
+                            ></path><path d="M16 3.13a4 4 0 0 1 0 7.75"
+                            ></path></svg
+                        >
+
+                        {#if pendingCount > 0}
+                            <span class="nav-badge">{pendingCount}</span>
+                        {/if}
+                    </span>
+                    <span class="label" class:hidden={isCollapsed}>Amis</span>
+                </a>
+            </li>
             {#if $user && $user.role === "admin"}
                 <li>
                     <a
@@ -179,7 +224,7 @@
             <li class="spacer"></li>
             <li>
                 <button
-                    on:click={logout}
+                    on:click={handleLogout}
                     class="logout-btn"
                     title="Déconnexion"
                 >
@@ -405,5 +450,18 @@
     .logout-btn:hover {
         background-color: #ffebee;
         color: #b71c1c;
+    }
+
+    .nav-badge {
+        position: absolute;
+        top: -5px;
+        right: -10px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        padding: 0.1rem 0.4rem;
+        font-size: 0.7rem;
+        font-weight: bold;
+        line-height: 1;
     }
 </style>
