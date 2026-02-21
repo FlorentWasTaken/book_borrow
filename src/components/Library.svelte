@@ -30,6 +30,7 @@
     let isDangerAction = false;
 
     let selectedBook = null;
+    let sheetBook = null;
     let actionType = null; // 'lend' or 'give'
     let error = "";
 
@@ -164,7 +165,7 @@
                     on:lend={handleCardAction}
                     on:give={handleCardAction}
                     on:return={handleCardAction}
-                    on:open_sheet={(e) => (selectedBook = e.detail.book)}
+                    on:open_sheet={(e) => (sheetBook = e.detail.book)}
                 />
             {/each}
         </div>
@@ -185,22 +186,22 @@
     />
 
     <!-- Mobile Bottom Sheet -->
-    {#if selectedBook}
+    {#if sheetBook}
         <BottomSheet
-            isOpen={!!selectedBook}
-            title={selectedBook.title}
-            on:close={() => (selectedBook = null)}
+            isOpen={!!sheetBook}
+            title={sheetBook.title}
+            on:close={() => (sheetBook = null)}
         >
-            {#if isOwner(selectedBook)}
-                {#if selectedBook.status !== "lent"}
+            {#if isOwner(sheetBook)}
+                {#if sheetBook.status !== "lent"}
                     <button
                         class="sheet-btn"
                         on:click={() => {
                             handleCardAction({
                                 type: "lend",
-                                detail: { book: selectedBook },
+                                detail: { book: sheetBook },
                             });
-                            selectedBook = null;
+                            sheetBook = null;
                         }}>Prêter</button
                     >
                     <button
@@ -208,9 +209,9 @@
                         on:click={() => {
                             handleCardAction({
                                 type: "give",
-                                detail: { book: selectedBook },
+                                detail: { book: sheetBook },
                             });
-                            selectedBook = null;
+                            sheetBook = null;
                         }}>Donner</button
                     >
                     <button
@@ -218,9 +219,9 @@
                         on:click={() => {
                             handleCardAction({
                                 type: "delete",
-                                detail: { book: selectedBook },
+                                detail: { book: sheetBook },
                             });
-                            selectedBook = null;
+                            sheetBook = null;
                         }}>Supprimer</button
                     >
                 {:else}
@@ -229,9 +230,9 @@
                         on:click={() => {
                             handleCardAction({
                                 type: "return",
-                                detail: { book: selectedBook },
+                                detail: { book: sheetBook },
                             });
-                            selectedBook = null;
+                            sheetBook = null;
                         }}>Marquer comme rendu</button
                     >
                 {/if}
@@ -241,9 +242,9 @@
                     on:click={() => {
                         handleCardAction({
                             type: "return",
-                            detail: { book: selectedBook },
+                            detail: { book: sheetBook },
                         });
-                        selectedBook = null;
+                        sheetBook = null;
                     }}>Rendre le livre</button
                 >
             {/if}

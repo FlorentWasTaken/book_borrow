@@ -177,11 +177,7 @@
     }
 
     .return-btn {
-        margin-top: 5px;
-        font-size: 0.8rem;
-        padding: 4px 8px;
         background: #28a745;
-        width: 100%;
     }
     @media (max-width: 767px), (hover: none) {
         .cover-container {
