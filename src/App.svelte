@@ -10,8 +10,10 @@
   import Profile from "./components/Profile.svelte";
   import AdminPanel from "./components/AdminPanel.svelte";
   import Library from "./components/Library.svelte";
+  import Wishlist from "./components/Wishlist.svelte";
   import Friends from "./components/Friends.svelte";
   import FriendInventory from "./components/FriendInventory.svelte";
+  import FriendWishlist from "./components/FriendWishlist.svelte";
   import UserGuide from "./components/UserGuide.svelte";
   import ToastContainer from "./components/ToastContainer.svelte";
   import logo from "./assets/logo.svg";
@@ -172,12 +174,20 @@
               <Library />
             </Route>
 
+            <Route path="/wishlist">
+              <Wishlist />
+            </Route>
+
             <Route path="/friends">
               <Friends />
             </Route>
 
             <Route path="/inventory/:id" let:params>
               <FriendInventory id={params.id} />
+            </Route>
+
+            <Route path="/friend-wishlist/:id" let:params>
+              <FriendWishlist id={params.id} />
             </Route>
 
             <Route path="/login">
@@ -303,6 +313,7 @@
 
   .card:has(:global(.admin-panel)),
   .card:has(:global(.library-container)),
+  .card:has(:global(.wishlist-container)),
   .card:has(:global(.friends-container)),
   .card:has(:global(.inventory-container)) {
     max-width: 95vw;

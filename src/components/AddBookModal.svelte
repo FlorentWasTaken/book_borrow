@@ -2,8 +2,10 @@
     import { createEventDispatcher } from "svelte";
 
     export let isOpen = false;
+    export let title = "Ajouter un livre";
+    export let hideFileUpload = false;
 
-    let title = "";
+    let bookTitle = "";
     let coverFile = null;
     let previewUrl = "";
     let isSubmitting = false;
@@ -50,17 +52,17 @@
     }
 
     function handleTitleInput(e) {
-        title = e.target.value;
+        bookTitle = e.target.value;
         coverFile = null;
 
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            searchBooks(title);
+            searchBooks(bookTitle);
         }, 500);
     }
 
     function selectBook(book) {
-        title = book.title;
+        bookTitle = book.title;
         if (book.coverUrl) {
             let secureUrl = book.coverUrl.replace("http:", "https:");
             previewUrl = secureUrl;
@@ -87,9 +89,9 @@
     }
 
     async function handleSubmit() {
-        if (title.trim()) {
+        if (bookTitle.trim()) {
             isSubmitting = true;
-            let payload = { title };
+            let payload = { title: bookTitle };
             if (coverFile) {
                 payload.coverFile = coverFile;
             } else if (previewUrl && previewUrl.startsWith("http")) {
@@ -98,7 +100,7 @@
 
             dispatch("add", payload);
             setTimeout(() => {
-                title = "";
+                bookTitle = "";
                 coverFile = null;
                 previewUrl = "";
                 isSubmitting = false;
@@ -110,7 +112,7 @@
 
     function handleClose() {
         isOpen = false;
-        title = "";
+        bookTitle = "";
         coverFile = null;
         previewUrl = "";
         searchResults = [];
@@ -183,20 +185,24 @@
                     {/if}
                 </div>
 
-                <div class="form-group">
-                    <label for="cover">Photo de couverture (Optionnel)</label>
-                    <input
-                        type="file"
-                        id="cover"
-                        accept="image/*"
-                        on:change={handleFileChange}
-                        disabled={isSubmitting}
-                    />
-                    <small
-                        >Laissez vide pour utiliser l'image trouvée ou par
-                        défaut.</small
-                    >
-                </div>
+                {#if !hideFileUpload}
+                    <div class="form-group">
+                        <label for="cover"
+                            >Photo de couverture (Optionnel)</label
+                        >
+                        <input
+                            type="file"
+                            id="cover"
+                            accept="image/*"
+                            on:change={handleFileChange}
+                            disabled={isSubmitting}
+                        />
+                        <small
+                            >Laissez vide pour utiliser l'image trouvée ou par
+                            défaut.</small
+                        >
+                    </div>
+                {/if}
 
                 {#if previewUrl}
                     <div class="preview">
@@ -213,7 +219,7 @@
                     <button
                         type="submit"
                         class="primary"
-                        disabled={!title.trim() || isSubmitting}
+                        disabled={!bookTitle.trim() || isSubmitting}
                     >
                         {isSubmitting ? "Ajout..." : "Ajouter"}
                     </button>
