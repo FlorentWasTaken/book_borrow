@@ -150,6 +150,13 @@
                                     >Voir l'inventaire</button
                                 >
                                 <button
+                                    class="secondary-btn"
+                                    on:click={() =>
+                                        navigate(
+                                            `/friend-wishlist/${friend.id}`,
+                                        )}>Voir la wishlist</button
+                                >
+                                <button
                                     class="danger-btn"
                                     on:click={() => handleRemove(friend.id)}
                                     >Retirer</button
@@ -399,6 +406,12 @@
     .primary-btn {
         background: var(--primary);
         color: white;
+    }
+
+    .secondary-btn {
+        background: var(--bg-secondary, #e0e0e0);
+        color: var(--text-color, #333);
+        border: 1px solid var(--border-color, #ccc);
     }
 
     .success-btn {
