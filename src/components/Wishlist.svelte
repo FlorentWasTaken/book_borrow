@@ -479,6 +479,14 @@
             font-size: 0.8rem;
         }
 
+        .ownership-badge {
+            font-size: 0.6rem;
+            padding: 3px 6px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.2;
+        }
+
         .add-btn {
             font-size: 0;
             padding: 0;

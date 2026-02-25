@@ -486,15 +486,15 @@
         .actions {
             width: 100%;
             display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
         }
 
         .actions button {
-            flex: 1;
-        }
-
-        .primary-btn,
-        .danger-btn {
-            width: 100%;
+            flex: 1 1 auto;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            min-width: 0;
         }
     }
 </style>
