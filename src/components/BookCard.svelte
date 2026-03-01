@@ -1,5 +1,7 @@
 <script>
     import { createEventDispatcher } from "svelte";
+    import { doc, getDoc } from "firebase/firestore";
+    import { db } from "../config/firebase";
 
     import { user } from "../stores/auth";
 
@@ -7,6 +9,28 @@
     export let readOnly = false;
 
     $: isOwner = $user && book.ownerId === $user.uid;
+
+    let ownerName = "";
+
+    $: if (!isOwner && book.ownerId) {
+        fetchOwnerName();
+    }
+
+    async function fetchOwnerName() {
+        if (!book.ownerId) return;
+        try {
+            const ownerDoc = await getDoc(doc(db, "users", book.ownerId));
+            if (ownerDoc.exists()) {
+                const data = ownerDoc.data();
+                ownerName = data.username || data.email;
+            } else {
+                ownerName = "Inconnu";
+            }
+        } catch (e) {
+            console.error("Error fetching owner name:", e);
+            ownerName = "Inconnu";
+        }
+    }
 
     const dispatch = createEventDispatcher();
     const defaultCover = "/src/assets/book_placeholder.svg";
@@ -70,7 +94,9 @@
                     >Prêté à {book.lentToName || "Inconnu"}</span
                 >
             {:else}
-                <span class="status borrowed">Emprunté</span>
+                <span class="status borrowed"
+                    >Emprunté à {ownerName || "..."}</span
+                >
             {/if}
         {/if}
     </div>
@@ -181,6 +207,10 @@
 
     .status.lent {
         color: #ffc107;
+    }
+
+    .status.borrowed {
+        color: #17a2b8; /* A visible blue-green color */
     }
 
     .return-btn {
