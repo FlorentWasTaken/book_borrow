@@ -15,37 +15,115 @@
     let searchResults = [];
     let showSuggestions = false;
     let searchTimeout;
+    let container;
+
+    const BOOKS_API_KEY = import.meta.env.VITE_BOOKS_API_KEY;
 
     async function searchBooks(query) {
+        console.log("searchBooks called with query:", query);
         if (!query || query.length < 3) {
+            console.log("Query too short or empty, clearing suggestions");
+            searchResults = [];
+            showSuggestions = false;
+            return;
+        }
+
+        let response;
+        let success = false;
+
+        // 1. Try Google Books API with dedicated key
+        try {
+            const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15&langRestrict=fr&key=${BOOKS_API_KEY}`;
+            console.log("Attempt 1: Fetching from Google Books with API Key...");
+            response = await fetch(url);
+            console.log("Response status:", response.status);
+            if (response.ok) {
+                success = true;
+            }
+        } catch (e) {
+            console.error("Attempt 1 failed:", e);
+        }
+
+        // 2. Try Google Books API without key (fallback)
+        if (!success) {
+            try {
+                const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15&langRestrict=fr`;
+                console.log("Attempt 2: Fetching from Google Books without key...");
+                response = await fetch(url);
+                console.log("Response status:", response.status);
+                if (response.ok) {
+                    success = true;
+                }
+            } catch (e) {
+                console.error("Attempt 2 failed:", e);
+            }
+        }
+
+        // 3. Try Open Library API (final bulletproof fallback)
+        let isOpenLibrary = false;
+        if (!success) {
+            try {
+                const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query + ' language:fre')}&lang=fr&limit=15`;
+                console.log("Attempt 3: Fetching from Open Library API...");
+                response = await fetch(url);
+                console.log("Response status:", response.status);
+                if (response.ok) {
+                    success = true;
+                    isOpenLibrary = true;
+                }
+            } catch (e) {
+                console.error("Attempt 3 failed:", e);
+            }
+        }
+
+        if (!success || !response) {
+            console.error("All search attempts failed.");
             searchResults = [];
             showSuggestions = false;
             return;
         }
 
         try {
-            const response = await fetch(
-                `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(query)}&maxResults=15&langRestrict=fr`,
-            );
             const data = await response.json();
+            console.log("Selected API raw data:", data);
 
-            if (data.items) {
-                searchResults = data.items.map((item) => ({
-                    id: item.id,
-                    title: item.volumeInfo.title,
-                    authors: item.volumeInfo.authors || [],
-                    coverUrl:
-                        item.volumeInfo.imageLinks?.thumbnail ||
-                        item.volumeInfo.imageLinks?.smallThumbnail ||
-                        null,
-                }));
-                showSuggestions = true;
+            if (isOpenLibrary) {
+                if (data.docs && data.docs.length > 0) {
+                    searchResults = data.docs.map((doc) => ({
+                        id: doc.key,
+                        title: doc.title,
+                        authors: doc.author_name || [],
+                        coverUrl: doc.cover_i 
+                            ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg` 
+                            : null,
+                    }));
+                    showSuggestions = true;
+                    console.log("Mapped searchResults (Open Library):", searchResults);
+                } else {
+                    searchResults = [];
+                    showSuggestions = false;
+                }
             } else {
-                searchResults = [];
-                showSuggestions = false;
+                // Google Books mapping
+                if (data.items) {
+                    searchResults = data.items.map((item) => ({
+                        id: item.id,
+                        title: item.volumeInfo.title,
+                        authors: item.volumeInfo.authors || [],
+                        coverUrl:
+                            item.volumeInfo.imageLinks?.thumbnail ||
+                            item.volumeInfo.imageLinks?.smallThumbnail ||
+                            null,
+                    }));
+                    showSuggestions = true;
+                    console.log("Mapped searchResults (Google Books):", searchResults);
+                } else {
+                    searchResults = [];
+                    showSuggestions = false;
+                }
             }
         } catch (e) {
-            console.error("Error searching books:", e);
+            console.error("Error processing search response:", e);
             searchResults = [];
             showSuggestions = false;
         }
@@ -73,8 +151,10 @@
         showSuggestions = false;
     }
 
-    function handleClickOutside() {
-        showSuggestions = false;
+    function handleClickOutside(event) {
+        if (container && !container.contains(event.target)) {
+            showSuggestions = false;
+        }
     }
 
     function handleFileChange(event) {
@@ -119,6 +199,8 @@
     }
 </script>
 
+<svelte:window on:click={handleClickOutside} />
+
 {#if isOpen}
     <div
         class="modal-backdrop"
@@ -133,16 +215,15 @@
             class="modal-content"
             on:click|stopPropagation
             role="document"
-            on:click={handleClickOutside}
         >
-            <h2>Ajouter un livre</h2>
+            <h2>{title}</h2>
             <form on:submit|preventDefault={handleSubmit}>
-                <div class="form-group relative">
+                <div class="form-group relative" bind:this={container}>
                     <label for="title">Titre du livre</label>
                     <input
                         type="text"
                         id="title"
-                        value={title}
+                        value={bookTitle}
                         on:input={handleTitleInput}
                         required
                         disabled={isSubmitting}

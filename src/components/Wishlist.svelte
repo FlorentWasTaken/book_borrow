@@ -225,7 +225,7 @@
     <AddBookModal
         bind:isOpen={isAddModalOpen}
         on:add={handleAddWish}
-        title=""
+        title="Ajouter un souhait"
         hideFileUpload={true}
     />
 

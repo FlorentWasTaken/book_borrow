@@ -5,7 +5,8 @@
         "moduleResolution": "Node",
         "resolveJsonModule": true,
         "allowJs": true,
-        "checkJs": true
+        "checkJs": true,
+        "types": ["vite/client"]
     },
     "include": [
         "src/**/*"

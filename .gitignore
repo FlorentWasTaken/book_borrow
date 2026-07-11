@@ -2,3 +2,6 @@ node_modules
 src/config/firebase.js
 dist
 .firebase
+.env
+.env.local
+.env.*.local
