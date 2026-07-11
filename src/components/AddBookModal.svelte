@@ -1,24 +1,39 @@
 <script>
     import { createEventDispatcher } from "svelte";
 
+    /** @type {boolean} */
     export let isOpen = false;
+    /** @type {string} */
     export let title = "Ajouter un livre";
+    /** @type {boolean} */
     export let hideFileUpload = false;
 
+    /** @type {string} */
     let bookTitle = "";
+    /** @type {File | null} */
     let coverFile = null;
+    /** @type {string} */
     let previewUrl = "";
+    /** @type {boolean} */
     let isSubmitting = false;
 
     const dispatch = createEventDispatcher();
 
+    /** @type {any[]} */
     let searchResults = [];
+    /** @type {boolean} */
     let showSuggestions = false;
+    /** @type {any} */
     let searchTimeout;
+    /** @type {HTMLElement | undefined} */
     let container;
 
     const BOOKS_API_KEY = import.meta.env.VITE_BOOKS_API_KEY;
 
+    /**
+     * @param {string} query
+     * @returns {Promise<void>}
+     */
     async function searchBooks(query) {
         console.log("searchBooks called with query:", query);
         if (!query || query.length < 3) {
@@ -89,7 +104,7 @@
 
             if (isOpenLibrary) {
                 if (data.docs && data.docs.length > 0) {
-                    searchResults = data.docs.map((doc) => ({
+                    searchResults = data.docs.map((/** @type {any} */ doc) => ({
                         id: doc.key,
                         title: doc.title,
                         authors: doc.author_name || [],
@@ -106,7 +121,7 @@
             } else {
                 // Google Books mapping
                 if (data.items) {
-                    searchResults = data.items.map((item) => ({
+                    searchResults = data.items.map((/** @type {any} */ item) => ({
                         id: item.id,
                         title: item.volumeInfo.title,
                         authors: item.volumeInfo.authors || [],
@@ -129,6 +144,9 @@
         }
     }
 
+    /**
+     * @param {any} e
+     */
     function handleTitleInput(e) {
         bookTitle = e.target.value;
         coverFile = null;
@@ -139,6 +157,9 @@
         }, 500);
     }
 
+    /**
+     * @param {any} book
+     */
     function selectBook(book) {
         bookTitle = book.title;
         if (book.coverUrl) {
@@ -151,12 +172,18 @@
         showSuggestions = false;
     }
 
+    /**
+     * @param {any} event
+     */
     function handleClickOutside(event) {
         if (container && !container.contains(event.target)) {
             showSuggestions = false;
         }
     }
 
+    /**
+     * @param {any} event
+     */
     function handleFileChange(event) {
         const file = event.target.files[0];
         if (file) {
@@ -168,9 +195,13 @@
         }
     }
 
+    /**
+     * @returns {Promise<void>}
+     */
     async function handleSubmit() {
         if (bookTitle.trim()) {
             isSubmitting = true;
+            /** @type {{ title: string, coverFile?: File, coverUrl?: string }} */
             let payload = { title: bookTitle };
             if (coverFile) {
                 payload.coverFile = coverFile;
